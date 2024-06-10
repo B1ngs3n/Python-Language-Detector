@@ -61,7 +61,11 @@ def get_word_length_frequency_dict(text_input):
 def get_fingerprint(text):
     character_frequency = get_character_frequency_dict(delete_special_characters(text))
     word_length_frequency = get_word_length_frequency_dict(text)
-    fingerprint_dict = {**character_frequency, **word_length_frequency}
+    #fingerprint_dict = {**character_frequency, **word_length_frequency}
+    fingerprint_dict = {
+        "character_frequency":character_frequency,
+        "word_length_frequency":word_length_frequency
+    }
     return fingerprint_dict
 
 def sort_dict_by_values_desc(dict_input):

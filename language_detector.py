@@ -9,54 +9,84 @@ def get_language(input_fingerprint):
 
     fingerprints = glob.glob(os.path.join(fingerprints_directory, '*.json'))
 
+    fingerprints_dict_list = []
+    fingerprints_character_frequency_dict_list = []
+    fingerprints_word_length_frequence_dict_list = []
+
+    #split that thing!
+
     for fingerprint in fingerprints:
-        language_dict = get_json_into_dict(fingerprint)
+        fingerprints_dict_list.append(get_json_into_dict_list(fingerprint))
 
-        result_list = []
-        result_list.append(fingerprint[13:-5])
+    result_dict_list = []
 
-        for key in input_fingerprint:
-            if key in language_dict:
-                result = 1 / (input_fingerprint[key] / language_dict[key])
-                result_list.append(result)
+    for key in input_fingerprint:
+        result_dict = {}
+        i = 0
+        for fingerprint_dict in fingerprints_dict_list:
+            fingerprint_name = fingerprints[i]
+            if key in fingerprint_dict:
+                result_dict[fingerprint_name[13:-5]] = 1 / (input_fingerprint[key] / fingerprint_dict[key])
+            else:
+                result_dict[fingerprint_name[13:-5]] = 0
+            i += 1
         
-        average_points = 0
-
-        for i in result_list:
-            average_points += i
+        result_sum = 0.0
+        for result in result_dict:
+            result_sum += result_dict[result]
         
-        average_points = average_points / len(result_list)
+        for key in result_dict:
+            if result_sum != 0:
+                result_dict[key] = result_dict[key] / result_sum
+            else:
+                result_dict[key] = 0
 
-        #language_points_dict[fingerprint[13:-5]] = average_points
+        result_dict_list.append(result_dict)
 
-    language_points_dict[fingerprint[13:-5]] = average_points
+    final_dict = {}
 
-    sorted_language_points_dict = dict(sorted(language_points_dict.items(), key=lambda item: item[1], reverse=True))
+    for dict in result_dict_list:
+        for key in dict:
+            if key in final_dict:
+                final_dict[key] += dict[key]
+            else:
+                final_dict[key] = dict[key]
 
-    return next(iter(sorted_language_points_dict))
+    sorted_final_dict = sorted(final_dict.items(), key=lambda item: item[1], reverse=True)
 
-def get_json_into_dict(file_path):
+    return sorted_final_dict
+
+def get_json_into_dict_list(file_path):
     with open(file_path, 'r') as json_file:
-        output_dictionary = json.load(json_file)
-    return output_dictionary
+        data = json.load(json_file)
+    
+    dict1 = data.get('character_frequency', {})
+    dict2 = data.get('word_length_frequency', {})
 
-trainingdata_directory = "trainingdata/"
-fingerprints_directory = "fingerprints/"
+    return [dict1, dict2]
 
 def stop_application():
     print("Stopping Application!")
     sys.exit()
 
+### MAIN ###
+
+trainingdata_directory = "trainingdata/"
+fingerprints_directory = "fingerprints/"
+examples_directory = "examples/"
 
 file_found = False
 
 while file_found == False:
     try:
-        file_path = str(input("Please enter filename (with \".txt\" extension): "))
+        file_path = str(input("Please enter filename: "))
         if file_path == "exit":
             stop_application()
         #file_path = "example_text_de.txt"
-        text = read_file(file_path)
+        text = read_file(f"{examples_directory}{file_path}.txt")
+        if text == '':
+            print("Input Text is empty!")
+            stop_application()
         file_found = True
     except Exception:
         print("File not found!")
@@ -64,4 +94,13 @@ while file_found == False:
 input_fingerprint = get_fingerprint(text)
 #get_language(input_fingerprint)
 
-print(get_language(input_fingerprint))
+#print(get_language(input_fingerprint))
+
+result_dictionary = get_language(input_fingerprint)
+
+for result in result_dictionary:
+    print(result)
+
+final_language_result = next(iter(result_dictionary))
+
+print(f"Detected Language is: {final_language_result[0]}")
