@@ -15,15 +15,11 @@ def read_file(file_path):
             with open(file_path, 'r', encoding='latin1') as file:
                 return file.read()
 
-def write_dict_into_file(dict_input, path):
+def write_dict_into_json(dict_input, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
-    try:
-        with open(path, 'w', encoding='utf-8') as json_file:
-            json.dump(dict_input, json_file, indent=4)
-    except:
-        with open(path, 'w', encoding='utf-16') as json_file:
-            json.dump(dict_input, json_file, indent=4)
+    with open(path, 'w', encoding='utf-8') as json_file:
+        json.dump(dict_input, json_file, indent=4)
 
 def get_character_frequency_dict(text_input):
     character_frequency_dict = {}
@@ -73,6 +69,11 @@ def sort_dict_by_values_desc(dict_input):
     sorted_dict = {key: value for key, value in sorted_items}
     return sorted_dict
 
+def strip_txt_from_filename(filename):
+    if filename.endswith('.txt'):
+        return filename[:-4]
+    return filename
+
 ### MAIN ###
 
 trainingdata_directory = "trainingdata/"
@@ -83,4 +84,4 @@ txt_files = glob.glob(os.path.join(trainingdata_directory, '*.txt'))
 for file_path in txt_files:
     text = read_file(file_path)
     fingerprint = get_fingerprint(text)
-    write_dict_into_file(fingerprint, f"{fingerprint_directory}fingerprint_{os.path.basename(file_path)}.json")
+    write_dict_into_json(fingerprint, f"{fingerprint_directory}{strip_txt_from_filename(os.path.basename(file_path))}.json")
