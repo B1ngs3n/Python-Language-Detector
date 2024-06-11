@@ -1,22 +1,19 @@
+from iso639_language_codes import get_language_name_by_id
 from language_detector_fingerprint_creator import get_fingerprint, read_file
 import json
 import sys
 import glob
 import os
+from collections import Counter
+import argparse
 
-def get_language(input_fingerprint):
-    language_points_dict = {}
-
+def get_language(input_fingerprint, fingerprints_directory):
     fingerprints = glob.glob(os.path.join(fingerprints_directory, '*.json'))
 
     fingerprints_dict_list = []
-    fingerprints_character_frequency_dict_list = []
-    fingerprints_word_length_frequence_dict_list = []
-
-    #split that thing!
 
     for fingerprint in fingerprints:
-        fingerprints_dict_list.append(get_json_into_dict_list(fingerprint))
+        fingerprints_dict_list.append(get_json_into_dict(fingerprint))
 
     result_dict_list = []
 
@@ -32,6 +29,7 @@ def get_language(input_fingerprint):
             i += 1
         
         result_sum = 0.0
+
         for result in result_dict:
             result_sum += result_dict[result]
         
@@ -44,7 +42,7 @@ def get_language(input_fingerprint):
         result_dict_list.append(result_dict)
 
     final_dict = {}
-
+    
     for dict in result_dict_list:
         for key in dict:
             if key in final_dict:
@@ -56,51 +54,55 @@ def get_language(input_fingerprint):
 
     return sorted_final_dict
 
-def get_json_into_dict_list(file_path):
+def get_json_into_dict(file_path):
     with open(file_path, 'r') as json_file:
         data = json.load(json_file)
-    
-    dict1 = data.get('character_frequency', {})
-    dict2 = data.get('word_length_frequency', {})
 
-    return [dict1, dict2]
+    return data
 
 def stop_application():
     print("Stopping Application!")
     sys.exit()
 
-### MAIN ###
+def main():
+    fingerprints_directory = "fingerprints/"
+    examples_directory = "examples/"
+    file_found = False
 
-trainingdata_directory = "trainingdata/"
-fingerprints_directory = "fingerprints/"
-examples_directory = "examples/"
+    if len(sys.argv) > 1:
+        file_path = sys.argv[1]        
+        try:
+            text = read_file(f"{examples_directory}{file_path}.txt")
+            if text == '':
+                print("Input Text is empty!")
+                stop_application()
+            file_found = True
+        except Exception:
+            print("File not found!")
 
-file_found = False
+    while not file_found:
+        try:
+            file_path = str(input("Please enter filename: "))
+            if file_path == "exit":
+                stop_application()
+            #file_path = "example_text_de.txt"
+            text = read_file(f"{examples_directory}{file_path}.txt")
+            if text == '':
+                print("Input Text is empty!")
+                stop_application()
+            file_found = True
+        except Exception:
+            print("File not found!")
 
-while file_found == False:
-    try:
-        file_path = str(input("Please enter filename: "))
-        if file_path == "exit":
-            stop_application()
-        #file_path = "example_text_de.txt"
-        text = read_file(f"{examples_directory}{file_path}.txt")
-        if text == '':
-            print("Input Text is empty!")
-            stop_application()
-        file_found = True
-    except Exception:
-        print("File not found!")
+    input_fingerprint = get_fingerprint(text)
+    result_dictionary = get_language(input_fingerprint, fingerprints_directory)
 
-input_fingerprint = get_fingerprint(text)
-#get_language(input_fingerprint)
+    for result in result_dictionary:
+        print(result)
 
-#print(get_language(input_fingerprint))
+    final_language_result = next(iter(result_dictionary))
+    detected_language_string = get_language_name_by_id(final_language_result[0])
+    print(f"Detected Language is: {detected_language_string}")
 
-result_dictionary = get_language(input_fingerprint)
-
-for result in result_dictionary:
-    print(result)
-
-final_language_result = next(iter(result_dictionary))
-
-print(f"Detected Language is: {final_language_result[0]}")
+if __name__ == "__main__":
+    main()
