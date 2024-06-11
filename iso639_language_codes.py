@@ -1,370 +1,215 @@
+import difflib
+import sys
+
+languages = {
+    "AA": "Afar",
+    "AB": "Abkhazian",
+    "AF": "Afrikaans",
+    "AK": "Akan",
+    "SQ": "Albanian",
+    "AM": "Amharic",
+    "AR": "Arabic",
+    "AN": "Aragonese",
+    "HY": "Armenian",
+    "AS": "Assamese",
+    "AV": "Avaric",
+    "AE": "Avestan",
+    "AY": "Aymara",
+    "AZ": "Azerbaijani",
+    "BM": "Bambara",
+    "BA": "Bashkir",
+    "EU": "Basque",
+    "BE": "Belarusian",
+    "BN": "Bengali",
+    "BI": "Bislama",
+    "BS": "Bosnian",
+    "BR": "Breton",
+    "BG": "Bulgarian",
+    "MY": "Burmese",
+    "CA": "Catalan, Valencian",
+    "CH": "Chamorro",
+    "CE": "Chechen",
+    "NY": "Chichewa, Chewa, Nyanja",
+    "ZH": "Chinese",
+    "CU": "Church Slavonic, Old Slavonic, Old Church Slavonic",
+    "CV": "Chuvash",
+    "KW": "Cornish",
+    "CO": "Corsican",
+    "CR": "Cree",
+    "HR": "Croatian",
+    "CS": "Czech",
+    "DA": "Danish",
+    "DV": "Divehi, Dhivehi, Maldivian",
+    "NL": "Dutch, Flemish",
+    "DZ": "Dzongkha",
+    "EN": "English",
+    "EO": "Esperanto",
+    "ET": "Estonian",
+    "EE": "Ewe",
+    "FO": "Faroese",
+    "FJ": "Fijian",
+    "FI": "Finnish",
+    "FR": "French",
+    "FY": "Western Frisian",
+    "FF": "Fulah",
+    "GD": "Gaelic, Scottish Gaelic",
+    "GL": "Galician",
+    "LG": "Ganda",
+    "KA": "Georgian",
+    "DE": "German",
+    "EL": "Greek, Modern",
+    "KL": "Kalaallisut, Greenlandic",
+    "GN": "Guarani",
+    "GU": "Gujarati",
+    "HT": "Haitian, Haitian Creole",
+    "HA": "Hausa",
+    "HE": "Hebrew",
+    "HZ": "Herero",
+    "HI": "Hindi",
+    "HO": "Hiri Motu",
+    "HU": "Hungarian",
+    "IS": "Icelandic",
+    "IO": "Ido",
+    "IG": "Igbo",
+    "ID": "Indonesian",
+    "IA": "Interlingua",
+    "IE": "Interlingue, Occidental",
+    "IU": "Inuktitut",
+    "IK": "Inupiaq",
+    "GA": "Irish",
+    "IT": "Italian",
+    "JA": "Japanese",
+    "JV": "Javanese",
+    "KN": "Kannada",
+    "KR": "Kanuri",
+    "KS": "Kashmiri",
+    "KK": "Kazakh",
+    "KM": "Central Khmer",
+    "KI": "Kikuyu, Gikuyu",
+    "RW": "Kinyarwanda",
+    "KY": "Kirghiz, Kyrgyz",
+    "KV": "Komi",
+    "KG": "Kongo",
+    "KO": "Korean",
+    "KJ": "Kuanyama, Kwanyama",
+    "KU": "Kurdish",
+    "LO": "Lao",
+    "LA": "Latin",
+    "LV": "Latvian",
+    "LI": "Limburgan, Limburger, Limburgish",
+    "LN": "Lingala",
+    "LT": "Lithuanian",
+    "LU": "Luba-Katanga",
+    "LB": "Luxembourgish, Letzeburgesch",
+    "MK": "Macedonian",
+    "MG": "Malagasy",
+    "MS": "Malay",
+    "ML": "Malayalam",
+    "MT": "Maltese",
+    "GV": "Manx",
+    "MI": "Maori",
+    "MR": "Marathi",
+    "MH": "Marshallese",
+    "MN": "Mongolian",
+    "NA": "Nauru",
+    "NV": "Navajo, Navaho",
+    "ND": "North Ndebele",
+    "NR": "South Ndebele",
+    "NG": "Ndonga",
+    "NE": "Nepali",
+    "NO": "Norwegian",
+    "NB": "Norwegian Bokmål",
+    "NN": "Norwegian Nynorsk",
+    "II": "Sichuan Yi, Nuosu",
+    "OC": "Occitan",
+    "OJ": "Ojibwa",
+    "OR": "Oriya",
+    "OM": "Oromo",
+    "OS": "Ossetian, Ossetic",
+    "PI": "Pali",
+    "PS": "Pashto, Pushto",
+    "FA": "Persian",
+    "PL": "Polish",
+    "PT": "Portuguese",
+    "PA": "Punjabi, Panjabi",
+    "QU": "Quechua",
+    "RO": "Romanian, Moldavian, Moldovan",
+    "RM": "Romansh",
+    "RN": "Rundi",
+    "RU": "Russian",
+    "SE": "Northern Sami",
+    "SM": "Samoan",
+    "SG": "Sango",
+    "SA": "Sanskrit",
+    "SC": "Sardinian",
+    "SR": "Serbian",
+    "SN": "Shona",
+    "SD": "Sindhi",
+    "SI": "Sinhala, Sinhalese",
+    "SK": "Slovak",
+    "SL": "Slovenian",
+    "SO": "Somali",
+    "ST": "Southern Sotho",
+    "ES": "Spanish, Castilian",
+    "SU": "Sundanese",
+    "SW": "Swahili",
+    "SS": "Swati",
+    "SV": "Swedish",
+    "TL": "Tagalog",
+    "TY": "Tahitian",
+    "TG": "Tajik",
+    "TA": "Tamil",
+    "TT": "Tatar",
+    "TE": "Telugu",
+    "TH": "Thai",
+    "BO": "Tibetan",
+    "TI": "Tigrinya",
+    "TO": "Tonga (Tonga Islands)",
+    "TS": "Tsonga",
+    "TN": "Tswana",
+    "TR": "Turkish",
+    "TK": "Turkmen",
+    "TW": "Twi",
+    "UG": "Uighur, Uyghur",
+    "UK": "Ukrainian",
+    "UR": "Urdu",
+    "UZ": "Uzbek",
+    "VE": "Venda",
+    "VI": "Vietnamese",
+    "VO": "Volapük",
+    "WA": "Walloon",
+    "CY": "Welsh",
+    "WO": "Wolof",
+    "XH": "Xhosa",
+    "YI": "Yiddish",
+    "YO": "Yoruba",
+    "ZA": "Zhuang, Chuang",
+    "ZU": "Zulu"
+}
+
+language_to_code = {}
+for code, name in languages.items():
+    for sub_name in name.split(', '):
+        language_to_code[sub_name.strip().lower()] = code
+
 def get_language_name_by_id(id):
-    match id.upper():
-        case "AB":
-            return "Abkhazian (AB)"
-        case "AA":
-            return "Afar (AA)"
-        case "AF":
-            return "Afrikaans (AF)"
-        case "AK":
-            return "Akan (AK)"
-        case "SQ":
-            return "Albanian (SQ)"
-        case "AM":
-            return "Amharic (AM)"
-        case "AR":
-            return "Arabic (AR)"
-        case "AN":
-            return "Aragonese (AN)"
-        case "HY":
-            return "Armenian (HY)"
-        case "AS":
-            return "Assamese (AS)"
-        case "AV":
-            return "Avaric (AV)"
-        case "AE":
-            return "Avestan (AE)"
-        case "AY":
-            return "Aymara (AY)"
-        case "AZ":
-            return "Azerbaijani (AZ)"
-        case "BM":
-            return "Bambara (BM)"
-        case "BA":
-            return "Bashkir (BA)"
-        case "EU":
-            return "Basque (EU)"
-        case "BE":
-            return "Belarusian (BE)"
-        case "BN":
-            return "Bengali (BN)"
-        case "BI":
-            return "Bislama (BI)"
-        case "BS":
-            return "Bosnian (BS)"
-        case "BR":
-            return "Breton (BR)"
-        case "BG":
-            return "Bulgarian (BG)"
-        case "MY":
-            return "Burmese (MY)"
-        case "CA":
-            return "Catalan, Valencian (CA)"
-        case "CH":
-            return "Chamorro (CH)"
-        case "CE":
-            return "Chechen (CE)"
-        case "NY":
-            return "Chichewa, Chewa, Nyanja (NY)"
-        case "ZH":
-            return "Chinese (ZH)"
-        case "CU":
-            return "Church Slavonic, Old Slavonic, Old Church Slavonic (CU)"
-        case "CV":
-            return "Chuvash (CV)"
-        case "KW":
-            return "Cornish (KW)"
-        case "CO":
-            return "Corsican (CO)"
-        case "CR":
-            return "Cree (CR)"
-        case "HR":
-            return "Croatian (HR)"
-        case "CS":
-            return "Czech (CS)"
-        case "DA":
-            return "Danish (DA)"
-        case "DV":
-            return "Divehi, Dhivehi, Maldivian (DV)"
-        case "NL":
-            return "Dutch, Flemish (NL)"
-        case "DZ":
-            return "Dzongkha (DZ)"
-        case "EN":
-            return "English (EN)"
-        case "EO":
-            return "Esperanto (EO)"
-        case "ET":
-            return "Estonian (ET)"
-        case "EE":
-            return "Ewe (EE)"
-        case "FO":
-            return "Faroese (FO)"
-        case "FJ":
-            return "Fijian (FJ)"
-        case "FI":
-            return "Finnish (FI)"
-        case "FR":
-            return "French (FR)"
-        case "FY":
-            return "Western Frisian (FY)"
-        case "FF":
-            return "Fulah (FF)"
-        case "GD":
-            return "Gaelic, Scottish Gaelic (GD)"
-        case "GL":
-            return "Galician (GL)"
-        case "LG":
-            return "Ganda (LG)"
-        case "KA":
-            return "Georgian (KA)"
-        case "DE":
-            return "German (DE)"
-        case "EL":
-            return "Greek, Modern (EL)"
-        case "KL":
-            return "Kalaallisut, Greenlandic (KL)"
-        case "GN":
-            return "Guarani (GN)"
-        case "GU":
-            return "Gujarati (GU)"
-        case "HT":
-            return "Haitian, Haitian Creole (HT)"
-        case "HA":
-            return "Hausa (HA)"
-        case "HE":
-            return "Hebrew (HE)"
-        case "HZ":
-            return "Herero (HZ)"
-        case "HI":
-            return "Hindi (HI)"
-        case "HO":
-            return "Hiri Motu (HO)"
-        case "HU":
-            return "Hungarian (HU)"
-        case "IS":
-            return "Icelandic (IS)"
-        case "IO":
-            return "Ido (IO)"
-        case "IG":
-            return "Igbo (IG)"
-        case "ID":
-            return "Indonesian (ID)"
-        case "IA":
-            return "Interlingua (IA)"
-        case "IE":
-            return "Interlingue, Occidental (IE)"
-        case "IU":
-            return "Inuktitut (IU)"
-        case "IK":
-            return "Inupiaq (IK)"
-        case "GA":
-            return "Irish (GA)"
-        case "IT":
-            return "Italian (IT)"
-        case "JA":
-            return "Japanese (JA)"
-        case "JV":
-            return "Javanese (JV)"
-        case "KN":
-            return "Kannada (KN)"
-        case "KR":
-            return "Kanuri (KR)"
-        case "KS":
-            return "Kashmiri (KS)"
-        case "KK":
-            return "Kazakh (KK)"
-        case "KM":
-            return "Central Khmer (KM)"
-        case "KI":
-            return "Kikuyu, Gikuyu (KI)"
-        case "RW":
-            return "Kinyarwanda (RW)"
-        case "KY":
-            return "Kirghiz, Kyrgyz (KY)"
-        case "KV":
-            return "Komi (KV)"
-        case "KG":
-            return "Kongo (KG)"
-        case "KO":
-            return "Korean (KO)"
-        case "KJ":
-            return "Kuanyama, Kwanyama (KJ)"
-        case "KU":
-            return "Kurdish (KU)"
-        case "LO":
-            return "Lao (LO)"
-        case "LA":
-            return "Latin (LA)"
-        case "LV":
-            return "Latvian (LV)"
-        case "LI":
-            return "Limburgan, Limburger, Limburgish (LI)"
-        case "LN":
-            return "Lingala (LN)"
-        case "LT":
-            return "Lithuanian (LT)"
-        case "LU":
-            return "Luba-Katanga (LU)"
-        case "LB":
-            return "Luxembourgish, Letzeburgesch (LB)"
-        case "MK":
-            return "Macedonian (MK)"
-        case "MG":
-            return "Malagasy (MG)"
-        case "MS":
-            return "Malay (MS)"
-        case "ML":
-            return "Malayalam (ML)"
-        case "MT":
-            return "Maltese (MT)"
-        case "GV":
-            return "Manx (GV)"
-        case "MI":
-            return "Maori (MI)"
-        case "MR":
-            return "Marathi (MR)"
-        case "MH":
-            return "Marshallese (MH)"
-        case "MN":
-            return "Mongolian (MN)"
-        case "NA":
-            return "Nauru (NA)"
-        case "NV":
-            return "Navajo, Navaho (NV)"
-        case "ND":
-            return "North Ndebele (ND)"
-        case "NR":
-            return "South Ndebele (NR)"
-        case "NG":
-            return "Ndonga (NG)"
-        case "NE":
-            return "Nepali (NE)"
-        case "NO":
-            return "Norwegian (NO)"
-        case "NB":
-            return "Norwegian Bokmål (NB)"
-        case "NN":
-            return "Norwegian Nynorsk (NN)"
-        case "II":
-            return "Sichuan Yi, Nuosu (II)"
-        case "OC":
-            return "Occitan (OC)"
-        case "OJ":
-            return "Ojibwa (OJ)"
-        case "OR":
-            return "Oriya (OR)"
-        case "OM":
-            return "Oromo (OM)"
-        case "OS":
-            return "Ossetian, Ossetic (OS)"
-        case "PI":
-            return "Pali (PI)"
-        case "PS":
-            return "Pashto, Pushto (PS)"
-        case "FA":
-            return "Persian (FA)"
-        case "PL":
-            return "Polish (PL)"
-        case "PT":
-            return "Portuguese (PT)"
-        case "PA":
-            return "Punjabi, Panjabi (PA)"
-        case "QU":
-            return "Quechua (QU)"
-        case "RO":
-            return "Romanian, Moldavian, Moldovan (RO)"
-        case "RM":
-            return "Romansh (RM)"
-        case "RN":
-            return "Rundi (RN)"
-        case "RU":
-            return "Russian (RU)"
-        case "SE":
-            return "Northern Sami (SE)"
-        case "SM":
-            return "Samoan (SM)"
-        case "SG":
-            return "Sango (SG)"
-        case "SA":
-            return "Sanskrit (SA)"
-        case "SC":
-            return "Sardinian (SC)"
-        case "SR":
-            return "Serbian (SR)"
-        case "SN":
-            return "Shona (SN)"
-        case "SD":
-            return "Sindhi (SD)"
-        case "SI":
-            return "Sinhala, Sinhalese (SI)"
-        case "SK":
-            return "Slovak (SK)"
-        case "SL":
-            return "Slovenian (SL)"
-        case "SO":
-            return "Somali (SO)"
-        case "ST":
-            return "Southern Sotho (ST)"
-        case "ES":
-            return "Spanish, Castilian (ES)"
-        case "SU":
-            return "Sundanese (SU)"
-        case "SW":
-            return "Swahili (SW)"
-        case "SS":
-            return "Swati (SS)"
-        case "SV":
-            return "Swedish (SV)"
-        case "TL":
-            return "Tagalog (TL)"
-        case "TY":
-            return "Tahitian (TY)"
-        case "TG":
-            return "Tajik (TG)"
-        case "TA":
-            return "Tamil (TA)"
-        case "TT":
-            return "Tatar (TT)"
-        case "TE":
-            return "Telugu (TE)"
-        case "TH":
-            return "Thai (TH)"
-        case "BO":
-            return "Tibetan (BO)"
-        case "TI":
-            return "Tigrinya (TI)"
-        case "TO":
-            return "Tonga (Tonga Islands) (TO)"
-        case "TS":
-            return "Tsonga (TS)"
-        case "TN":
-            return "Tswana (TN)"
-        case "TR":
-            return "Turkish (TR)"
-        case "TK":
-            return "Turkmen (TK)"
-        case "TW":
-            return "Twi (TW)"
-        case "UG":
-            return "Uighur, Uyghur (UG)"
-        case "UK":
-            return "Ukrainian (UK)"
-        case "UR":
-            return "Urdu (UR)"
-        case "UZ":
-            return "Uzbek (UZ)"
-        case "VE":
-            return "Venda (VE)"
-        case "VI":
-            return "Vietnamese (VI)"
-        case "VO":
-            return "Volapük (VO)"
-        case "WA":
-            return "Walloon (WA)"
-        case "CY":
-            return "Welsh (CY)"
-        case "WO":
-            return "Wolof (WO)"
-        case "XH":
-            return "Xhosa (XH)"
-        case "YI":
-            return "Yiddish (YI)"
-        case "YO":
-            return "Yoruba (YO)"
-        case "ZA":
-            return "Zhuang, Chuang (ZA)"
-        case "ZU":
-            return "Zulu (ZU)"
-        case _:
-            return "Unknown language code"
+    if id.upper() in languages:
+        return languages[id.upper()]
+    return f"{id} - Unknown Language Code"
+
+def get_language_code_by_name(name):
+    closest_match = difflib.get_close_matches(name.lower(), language_to_code.keys(), n=1, cutoff=0.6)
+    if closest_match:
+        return language_to_code[closest_match[0]]
+    return "Unknown language name"
+
+_input = input("1 - Get Language Name by Language Code \n2 - Get Language Code by Language Name \n")
+
+if _input is "1":
+    print(get_language_name_by_id(input("Enter Language Code: ")))
+elif _input is "2":
+    print(get_language_code_by_name(input("Enter Language Name: ")))
+else:
+    print("Invalid Input")
+
+sys.exit()
