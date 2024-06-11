@@ -203,13 +203,17 @@ def get_language_code_by_name(name):
         return language_to_code[closest_match[0]]
     return "Unknown language name"
 
-_input = input("1 - Get Language Name by Language Code \n2 - Get Language Code by Language Name \n")
+def main():
+    _input = input("1 - Get Language Name by Language Code \n2 - Get Language Code by Language Name \n")
 
-if _input is "1":
-    print(get_language_name_by_id(input("Enter Language Code: ")))
-elif _input is "2":
-    print(get_language_code_by_name(input("Enter Language Name: ")))
-else:
-    print("Invalid Input")
+    if _input == "1":
+        print(get_language_name_by_id(input("Enter Language Code: ")))
+    elif _input == "2":
+        print(get_language_code_by_name(input("Enter Language Name: ")))
+    else:
+        print("Invalid Input")
 
-sys.exit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()
