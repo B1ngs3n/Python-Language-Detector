@@ -4,15 +4,16 @@ import json
 import sys
 import glob
 import os
-from collections import Counter
-import argparse
 
-def get_language(input_fingerprint, fingerprints_directory):
-    fingerprints = glob.glob(os.path.join(fingerprints_directory, '*.json'))
+#Function to detect the language of a given text
+def get_language(input_text, fingerprints_directory):
+    #Generate 'fingerprint'
+    input_fingerprint = get_fingerprint(input_text)
+    language_fingerprints = glob.glob(os.path.join(fingerprints_directory, '*.json'))
 
     fingerprints_dict_list = []
 
-    for fingerprint in fingerprints:
+    for fingerprint in language_fingerprints:
         fingerprints_dict_list.append(get_json_into_dict(fingerprint))
 
     result_dict_list = []
@@ -21,7 +22,7 @@ def get_language(input_fingerprint, fingerprints_directory):
         result_dict = {}
         i = 0
         for fingerprint_dict in fingerprints_dict_list:
-            fingerprint_name = fingerprints[i]
+            fingerprint_name = language_fingerprints[i]
             if key in fingerprint_dict:
                 result_dict[fingerprint_name[13:-5]] = 1 / (input_fingerprint[key] / fingerprint_dict[key])
             else:
@@ -50,9 +51,12 @@ def get_language(input_fingerprint, fingerprints_directory):
             else:
                 final_dict[key] = dict[key]
 
-    sorted_final_dict = sorted(final_dict.items(), key=lambda item: item[1], reverse=True)
+    #Most Likely Languages is a list 
+    most_likely_languages_dict = sorted(final_dict.items(), key=lambda item: item[1], reverse=True)
+    #Detected Language is the name of the language that is the first item in the sorted list of possible languages
+    detected_language = get_language_name_by_id(next(iter(most_likely_languages_dict))[0])
 
-    return sorted_final_dict
+    return detected_language
 
 def get_json_into_dict(file_path):
     with open(file_path, 'r') as json_file:
@@ -92,15 +96,7 @@ def main():
         except Exception:
             print("File not found!")
 
-    input_fingerprint = get_fingerprint(text)
-    result_dictionary = get_language(input_fingerprint, fingerprints_directory)
-
-    for result in result_dictionary:
-        print(result)
-
-    final_language_result = next(iter(result_dictionary))
-    detected_language_string = get_language_name_by_id(final_language_result[0])
-    print(f"Detected Language is: {detected_language_string}")
+    print(f"Detected Language is: {get_language(text, fingerprints_directory)}")
 
 if __name__ == "__main__":
     main()
