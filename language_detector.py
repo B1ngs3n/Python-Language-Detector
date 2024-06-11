@@ -66,13 +66,12 @@ def stop_application():
 
 def main():
     fingerprints_directory = "fingerprints/"
-    examples_directory = "examples/"
     file_found = False
 
     if len(sys.argv) > 1:
         file_path = sys.argv[1]        
         try:
-            text = read_file(f"{examples_directory}{file_path}.txt")
+            text = read_file(file_path)
             if text == '':
                 print("Input Text is empty!")
                 stop_application()
