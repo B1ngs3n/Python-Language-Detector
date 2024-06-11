@@ -1,12 +1,7 @@
-import re
 import os
 import sys
 import glob
 import json
-import unicodedata
-from nltk.util import ngrams
-import string
-from collections import Counter
 
 def read_file(file_path):
     try:
@@ -47,13 +42,11 @@ def get_character_frequency_dict(text_input):
 
     sorted_dict = sort_dict_by_values_desc(character_frequency_dict)
 
-    #return dict(list(sorted_dict.items())[:10])
     return sorted_dict
 
 def delete_special_characters(text_input, characters_to_remove):
     translation_table = str.maketrans('', '', characters_to_remove)
     cleaned_text = text_input.translate(translation_table)
-    #cleaned_text = re.sub(r'[^A-Za-z0-9 .]+', '', text_input)
     return cleaned_text
 
 def isolate_words_into_list(text_input):
@@ -66,11 +59,9 @@ def isolate_words_into_list(text_input):
 def get_word_and_word_length_frequency_dict(text_input):
     word_length_frequency_dict = {}
     word_frequency_dict = {}
-    ngram_frequency_dict = {}
 
     word_list = isolate_words_into_list(text_input)
     total_words = len(word_list)
-    #words = re.findall(r'\b\w+\b', text_input)
 
     for word in word_list:
         if f"wordLength{len(word)}" in word_length_frequency_dict:
@@ -95,16 +86,6 @@ def get_word_and_word_length_frequency_dict(text_input):
     word_frequency_dict = dict(list(sort_dict_by_values_desc(word_frequency_dict).items())[:20])
 
     return {**sorted_word_length_frequency_dict, **word_frequency_dict}
-
-    #ngram_list = list(ngrams(word_list, 3))
-    #ngram_counts = Counter(ngram_list)
-    #ngram_total = sum(ngram_counts.values())
-    #most_common_ngrams = dict(ngram_counts.most_common(20))
-    #most_common_ngrams_str = {' '.join(ngram): count for ngram, count in most_common_ngrams.items()}
-    #ngram_frequency_dict = {ngram: count / ngram_total for ngram, count in most_common_ngrams_str.items()}
-    
-    #return {**ngram_frequency_dict, **sorted_word_length_frequency_dict} 
-    #return dict(list(sort_dict_by_values_desc(word_length_frequency_dict).items())[:10])
 
 def get_fingerprint(text):
     character_frequency = get_character_frequency_dict(text)

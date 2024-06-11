@@ -82,11 +82,10 @@ def main():
 
     while not file_found:
         try:
-            file_path = str(input("Please enter filename: "))
+            file_path = str(input("Please enter filename (including '.txt'): "))
             if file_path == "exit":
                 stop_application()
-            #file_path = "example_text_de.txt"
-            text = read_file(f"{examples_directory}{file_path}.txt")
+            text = read_file(file_path)
             if text == '':
                 print("Input Text is empty!")
                 stop_application()
