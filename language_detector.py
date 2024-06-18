@@ -1,4 +1,4 @@
-from iso639_language_codes import get_language_name_by_id
+from language_code_translator import get_language_name_by_id
 from language_detector_fingerprint_creator import get_fingerprint, read_file
 import json
 import sys
@@ -23,10 +23,10 @@ def get_language(input_text, fingerprints_directory):
         i = 0
         for fingerprint_dict in fingerprints_dict_list:
             fingerprint_name = language_fingerprints[i]
-            if key in fingerprint_dict:
-                result_dict[fingerprint_name[13:-5]] = 1 / (input_fingerprint[key] / fingerprint_dict[key])
-            else:
+            if (key not in fingerprint_dict or fingerprint_dict[key] == 0):
                 result_dict[fingerprint_name[13:-5]] = 0
+            else:
+                result_dict[fingerprint_name[13:-5]] = 1 / (input_fingerprint[key] / fingerprint_dict[key])
             i += 1
         
         result_sum = 0.0
@@ -53,10 +53,11 @@ def get_language(input_text, fingerprints_directory):
 
     #Most Likely Languages is a list 
     most_likely_languages_dict = sorted(final_dict.items(), key=lambda item: item[1], reverse=True)
-    #Detected Language is the name of the language that is the first item in the sorted list of possible languages
-    detected_language = get_language_name_by_id(next(iter(most_likely_languages_dict))[0])
 
-    return detected_language
+    #Detected Language is the name of the language that is the first item in the sorted list of possible languages
+    detected_language_id = next(iter(most_likely_languages_dict))[0]
+    detected_language = get_language_name_by_id(detected_language_id)
+    return f"{detected_language_id} - {detected_language}"
 
 def get_json_into_dict(file_path):
     with open(file_path, 'r') as json_file:
